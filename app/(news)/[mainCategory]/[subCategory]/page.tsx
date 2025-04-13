@@ -1,75 +1,82 @@
-// app/post/[mainCategory]/[subCategory]/page.tsx
+// app/(news)/[mainCategory]/[subCategory]/page.tsx
 import { Suspense } from 'react';
 import { Metadata } from 'next';
 import { getPostsByMainCategorySlug, getPostsBySubCategorySlug } from '../../../../lib/posts';
 import NewsPostLayout from '../../../../components/NewsPostLayout';
 import Header from '../../../../components/layouts/Header';
 
-// Định nghĩa các tham số động cho metadata
-export async function generateMetadata({ 
-  params 
-}: { 
-  params: { mainCategory: string, subCategory?: string } 
+// Metadata động theo params
+export async function generateMetadata({
+  params,
+}: {
+  params: { mainCategory: string; subCategory: string };
 }): Promise<Metadata> {
-  const categoryName = decodeURIComponent(params.mainCategory)
-    .split("-")
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
+  // Await toàn bộ đối tượng params
+  const resolvedParams = await params;
   
+  const categoryName = decodeURIComponent(resolvedParams.mainCategory)
+    .split('-')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+
   let title = categoryName;
-  if (params.subCategory) {
-    const subCategoryName = decodeURIComponent(params.subCategory)
-      .split("-")
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(" ");
+
+  if (resolvedParams.subCategory) {
+    const subCategoryName = decodeURIComponent(resolvedParams.subCategory)
+      .split('-')
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
     title = `${subCategoryName} - ${categoryName}`;
   }
-  
+
   return {
     title: `${title} - Bài viết`,
-    description: `Danh sách các bài viết trong danh mục ${title}`
+    description: `Danh sách các bài viết trong danh mục ${title}`,
   };
 }
 
+// Page component
 export default async function Page({
   params,
   searchParams,
 }: {
-  params: { mainCategory: string, subCategory?: string };
-  searchParams: { page?: string, limit?: string };
+  params: { mainCategory: string; subCategory: string };
+  searchParams: { page?: string; limit?: string };
 }) {
-  // Lấy các thông số phân trang từ URL
-  const page = searchParams.page ? parseInt(searchParams.page) : 1;
-  const limit = searchParams.limit ? parseInt(searchParams.limit) : 12;
+  // Await toàn bộ các đối tượng params và searchParams
+  const [resolvedParams, resolvedSearchParams] = await Promise.all([
+    params,
+    searchParams
+  ]);
   
-  // Lấy các bài viết dựa vào danh mục và danh mục phụ (nếu có)
-  const result = params.subCategory
-    ? await getPostsBySubCategorySlug(params.mainCategory, params.subCategory, {
+  const page = resolvedSearchParams.page ? parseInt(resolvedSearchParams.page) : 1;
+  const limit = resolvedSearchParams.limit ? parseInt(resolvedSearchParams.limit) : 12;
+
+  const result = resolvedParams.subCategory
+    ? await getPostsBySubCategorySlug(resolvedParams.mainCategory, resolvedParams.subCategory, {
         page,
         limit,
-        publishedOnly: true
+        publishedOnly: true,
       })
-    : await getPostsByMainCategorySlug(params.mainCategory, {
+    : await getPostsByMainCategorySlug(resolvedParams.mainCategory, {
         page,
         limit,
-        publishedOnly: true
+        publishedOnly: true,
       });
 
-  // Trích xuất mảng bài viết từ kết quả phân trang
   const { data: posts, pagination } = result;
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
+      <header>
+        <Header />
+      </header>
       <Suspense fallback={<div className="text-center py-10">Đang tải...</div>}>
-        <header>
-          <Header />
-        </header>
-        
-        <NewsPostLayout 
-          posts={posts} 
+        <NewsPostLayout
+          posts={posts}
           pagination={pagination}
-          categorySlug={params.mainCategory}
-          subCategorySlug={params.subCategory}
+          categorySlug={resolvedParams.mainCategory}
+          subCategorySlug={resolvedParams.subCategory}
         />
       </Suspense>
     </div>
