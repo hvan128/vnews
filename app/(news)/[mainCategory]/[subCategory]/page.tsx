@@ -41,7 +41,7 @@ export default async function Page({
   searchParams,
 }: {
   params: { mainCategory: string; subCategory: string };
-  searchParams: { page?: string; limit?: string };
+  searchParams: { page: string; limit: string };
 }) {
   // Await toàn bộ các đối tượng params và searchParams
   const [resolvedParams, resolvedSearchParams] = await Promise.all([
