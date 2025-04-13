@@ -1,0 +1,34 @@
+@keyframes scroll {
+    0% {
+      transform: translateX(100%);
+    }
+    100% {
+      transform: translateX(-100%);
+    }
+  }
+  
+  @keyframes scroll2 {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-200%);
+    }
+  }
+  
+  .ticker {
+    position: absolute;
+    white-space: nowrap;
+    animation: scroll 30s linear infinite;
+  }
+  
+  .ticker2 {
+    position: absolute;
+    white-space: nowrap;
+    animation: scroll2 30s linear infinite;
+    animation-delay: 15s;
+  }
+  
+  .ticker:hover, .ticker2:hover {
+    animation-play-state: paused;
+  }
